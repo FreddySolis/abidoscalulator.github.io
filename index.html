@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Optimizador de Abidos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 420px;
+            margin-top: 20px;
+        }
+
+        h1 {
+            color: #0d47a1;
+            text-align: center;
+        }
+
+        .box {
+            background: white;
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+
+        input {
+            width: 150px;
+            padding: 5px;
+        }
+
+        button {
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            width: 48%;
+        }
+
+        .btn-primary {
+            background: #1976d2;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+        }
+
+        #resultado {
+            white-space: pre-line;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Optimiza tus abidos</h1>
+
+        <div class="box">
+            <div class="row">
+                <label>Abidos</label>
+                <input id="A" type="number">
+            </div>
+            <div class="row">
+                <label>Tender</label>
+                <input id="B" type="number">
+            </div>
+            <div class="row">
+                <label>Timber</label>
+                <input id="C" type="number">
+            </div>
+        </div>
+
+        <div class="row">
+            <button class="btn-primary" onclick="calcular()">Optimizar</button>
+            <button class="btn-secondary" onclick="limpiar()">Limpiar</button>
+        </div>
+
+        <div class="box">
+            <div id="resultado"></div>
+        </div>
+    </div>
+
+    <script>
+        function calcular() {
+            let A = parseFloat(document.getElementById("A").value);
+            let B = parseFloat(document.getElementById("B").value);
+            let C = parseFloat(document.getElementById("C").value);
+
+            if (isNaN(A) || isNaN(B) || isNaN(C)) {
+                mostrar("Por favor ingresa valores numéricos válidos.", "#c62828");
+                return;
+            }
+
+            function objective(b_conv, c_conv) {
+                if (b_conv < 0 || c_conv < 0 || b_conv > B || c_conv > C) return -1e9;
+
+                let b_conv_int = Math.floor(b_conv);
+                let c_conv_int = Math.floor(c_conv);
+
+                let b_consumed = Math.floor(b_conv_int / 50) * 50;
+                let c_consumed = Math.floor(c_conv_int / 100) * 100;
+
+                let polvo_b = (b_consumed / 50) * 80;
+                let polvo_c = (c_consumed / 100) * 80;
+                let polvo = polvo_b + polvo_c;
+
+                let A_total = A + Math.floor(polvo / 10);
+                let B_total = B - b_consumed;
+                let C_total = C - c_consumed;
+
+                let productos = Math.min(
+                    A_total / 33,
+                    B_total / 45,
+                    C_total / 86
+                );
+
+                return productos;
+            }
+
+            // Aproximación tipo evolución diferencial (random search mejorado)
+            let best = { val: -Infinity, b: 0, c: 0 };
+
+            for (let i = 0; i < 5000; i++) {
+                let b_rand = Math.random() * B;
+                let c_rand = Math.random() * C;
+
+                let val = objective(b_rand, c_rand);
+
+                if (val > best.val) {
+                    best = { val: val, b: b_rand, c: c_rand };
+                }
+            }
+
+            let b_opt_int = Math.floor(best.b);
+            let c_opt_int = Math.floor(best.c);
+
+            let b_convertible = Math.floor(b_opt_int / 50) * 50;
+            let c_convertible = Math.floor(c_opt_int / 100) * 100;
+
+            let polvo_b = (b_convertible / 50) * 80;
+            let polvo_c = (c_convertible / 100) * 80;
+            let polvo = polvo_b + polvo_c;
+
+            let A_total = A + Math.floor(polvo / 10);
+            let B_total = B - b_convertible;
+            let C_total = C - c_convertible;
+
+            let productos_int = Math.floor(Math.min(
+                A_total / 33,
+                B_total / 45,
+                C_total / 86
+            ));
+
+            let productos_display = productos_int * 10;
+
+            let residuo_A = A_total - (productos_int * 33);
+            let residuo_B = B_total - (productos_int * 45);
+            let residuo_C = C_total - (productos_int * 86);
+
+            mostrar(
+                `Abidos crafteables: ${productos_display}
+Tender a convertir: ${b_convertible}
+Timber a convertir: ${c_convertible}
+
+Residuos:
+  Abidos: ${residuo_A}
+  Tender: ${residuo_B}
+  Timber: ${residuo_C}`, "#1b5e20");
+        }
+
+        function limpiar() {
+            document.getElementById("A").value = "";
+            document.getElementById("B").value = "";
+            document.getElementById("C").value = "";
+            document.getElementById("resultado").innerText = "";
+        }
+
+        function mostrar(texto, color) {
+            let res = document.getElementById("resultado");
+            res.style.color = color;
+            res.innerText = texto;
+        }
+    </script>
+
+</body>
+
+</html>
